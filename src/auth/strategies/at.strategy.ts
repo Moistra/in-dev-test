@@ -10,20 +10,13 @@ export class AtStrategy extends PassportStrategy(Strategy, 'jwt') {
       secretOrKey: process.env.AT_SECRET, //different secret for refresh and access tokens
       ignoreExpiration: false,
       jwtFromRequest: ExtractJwt.fromExtractors([
-        // (req: Request) => {
-        //   const data = req?.cookies['accessToken'];
-        //   if (!data) {
-        //     return null;
-        //   }
-        //   return data.token;
-        // },
         (req: Request) => {
           if (
             req.cookies &&
             'accessToken' in req.cookies &&
-            req.cookies.user_token.length > 0
+            req.cookies.accessToken.length > 0
           ) {
-            return req.cookies.token;
+            return req.cookies.accessToken;
           }
           return null;
         },

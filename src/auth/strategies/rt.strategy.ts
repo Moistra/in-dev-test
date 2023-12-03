@@ -15,9 +15,9 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
           if (
             req.cookies &&
             'refreshToken' in req.cookies &&
-            req.cookies.user_token.length > 0
+            req.cookies.refreshToken.length > 0
           ) {
-            return req.cookies.token;
+            return req.cookies.refreshToken;
           }
           return null;
         },

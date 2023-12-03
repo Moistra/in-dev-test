@@ -24,5 +24,5 @@ export class User {
   hash: string;
 
   @Column({ type: 'text', nullable: true })
-  hashedRt: string;
+  hashedRt: string | null;
 }

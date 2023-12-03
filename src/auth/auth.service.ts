@@ -2,7 +2,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  UnauthorizedException
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -48,9 +48,33 @@ export class AuthService {
     return tokens;
   }
 
-  resetPassLocal() {}
+  async resetPassLocal(dto: AuthDto): Promise<Tokens> {
+    const hash = await this.hashData(dto.password);
+    const { id } = await this.userRepository.findOneBy({
+      email: dto.email,
+    });
+    const user = await this.userRepository.preload({
+      id: id,
+      email: dto.email,
+      hash: hash,
+    });
+    const savedUser = await this.userRepository.save(user);
+    const tokens = await this.generateTokens(savedUser.id, savedUser.email);
+    await this.updateRtHash(savedUser.id, tokens.refresh_token);
+    return tokens;
+  }
 
-  logout() {}
+  async logout(userId: number) {
+    console.log(`in logout service userId=${userId}`);
+    const user = await this.userRepository.preload({
+      id: userId,
+      hashedRt: null,
+    });
+    if (!user) {
+      throw new ForbiddenException();
+    }
+    await this.userRepository.save(user);
+  }
 
   refreshToken() {}
 
