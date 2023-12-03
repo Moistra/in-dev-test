@@ -6,13 +6,13 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
+import { GetCurrentReqCookies, GetCurrentUserId } from './common/decorators';
 
 @Controller('auth')
 export class AuthController {
@@ -77,22 +77,21 @@ export class AuthController {
   @UseGuards(AtGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@Req() req: Request) {
-    const user = req.user;
-    return this.authService.logout(+user['sub']);
+  logout(@GetCurrentUserId() userId: number) {
+    return this.authService.logout(userId);
   }
 
   @UseGuards(RtGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshTokens(
-    @Req() req: Request,
+    @GetCurrentUserId() userId: number,
+    @GetCurrentReqCookies() cookies,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = req.user;
     const tokens = await this.authService.refreshToken(
-      +user['sub'],
-      req.cookies.refreshToken,
+      userId,
+      cookies.refreshToken,
     );
     res
       .cookie('accessToken', tokens.access_token, {
