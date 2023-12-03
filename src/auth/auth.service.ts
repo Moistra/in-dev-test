@@ -82,8 +82,6 @@ export class AuthService {
     if (!user || user.hashedRt === null) {
       throw new ForbiddenException('Access denied');
     }
-    console.log(user.hashedRt);
-    console.log(rt);
     const isVerifiedRt = await bcrypt.compare(rt, user.hashedRt);
     if (!isVerifiedRt) {
       throw new UnauthorizedException('Access denied');

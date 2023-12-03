@@ -1,4 +1,3 @@
-import { AtGuard } from './common/guards/at.guard';
 import { RtGuard } from './common/guards/rt.guard';
 import {
   Body,
@@ -95,8 +94,6 @@ export class AuthController {
     @GetCurrentReqCookies() cookies,
     @Res({ passthrough: true }) res: Response,
   ) {
-    console.log(userId);
-    console.log(cookies);
     const tokens = await this.authService.refreshToken(
       userId,
       cookies.refreshToken as string,
