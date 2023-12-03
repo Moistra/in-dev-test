@@ -1,3 +1,5 @@
+import { AtGuard } from './common/guards/at.guard';
+import { RtGuard } from './common/guards/rt.guard';
 import {
   Body,
   Controller,
@@ -11,8 +13,6 @@ import {
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
-import { Tokens } from './types';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -55,7 +55,7 @@ export class AuthController {
       .send(tokens);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AtGuard)
   @Post('local/reset')
   @HttpCode(HttpStatus.OK)
   async resetPassLocal(
@@ -74,7 +74,7 @@ export class AuthController {
       .send(tokens);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AtGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout(@Req() req: Request) {
@@ -82,7 +82,7 @@ export class AuthController {
     return this.authService.logout(+user['sub']);
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(RtGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshTokens(
