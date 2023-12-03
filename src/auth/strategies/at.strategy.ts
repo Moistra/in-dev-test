@@ -30,7 +30,7 @@ export class AtStrategy extends PassportStrategy(Strategy, 'jwt') {
       'accessToken' in req.cookies &&
       req.cookies.user_token.length > 0
     ) {
-      return req.cookies.token;
+      return req.cookies.accessToken;
     }
     return null;
   }

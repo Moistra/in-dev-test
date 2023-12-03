@@ -65,7 +65,6 @@ export class AuthService {
   }
 
   async logout(userId: number) {
-    console.log(`in logout service userId=${userId}`);
     const user = await this.userRepository.preload({
       id: userId,
       hashedRt: null,
@@ -76,7 +75,22 @@ export class AuthService {
     await this.userRepository.save(user);
   }
 
-  refreshToken() {}
+  async refreshToken(id: number, rt: string): Promise<Tokens> {
+    const user = await this.userRepository.findOneBy({
+      id: id,
+    });
+    if (!user) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const isVerifiedRt = await bcrypt.compare(rt, user.hashedRt);
+    if (!isVerifiedRt) {
+      throw new UnauthorizedException('Access denied');
+    }
+    const tokens = await this.generateTokens(user.id, user.email);
+    await this.updateRtHash(user.id, tokens.refresh_token);
+    return tokens;
+  }
 
   hashData(data: string) {
     const saltRounds = +process.env.BCRYPT_SALT || 10;

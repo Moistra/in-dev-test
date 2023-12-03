@@ -8,7 +8,6 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor() {
     super({
       secretOrKey: process.env.RT_SECRET, //different secret for refresh and access tokens
-      passReqToCallBack: true,
       ignoreExpiration: false,
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => {
@@ -24,16 +23,10 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
       ]),
     });
   }
-  validate(req: Request, payload: any) {
+  validate(payload: any) {
     if (payload === null) {
       throw new UnauthorizedException();
     }
-    // return payload;
-
-    const refreshToken = req.cookies['refreshToken'];
-    return {
-      ...payload,
-      refreshToken,
-    };
+    return payload;
   }
 }
