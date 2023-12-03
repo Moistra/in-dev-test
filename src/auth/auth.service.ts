@@ -79,10 +79,11 @@ export class AuthService {
     const user = await this.userRepository.findOneBy({
       id: id,
     });
-    if (!user) {
+    if (!user || user.hashedRt === null) {
       throw new ForbiddenException('Access denied');
     }
-
+    console.log(user.hashedRt);
+    console.log(rt);
     const isVerifiedRt = await bcrypt.compare(rt, user.hashedRt);
     if (!isVerifiedRt) {
       throw new UnauthorizedException('Access denied');

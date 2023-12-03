@@ -12,12 +12,17 @@ import {
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
-import { GetCurrentReqCookies, GetCurrentUserId } from './common/decorators';
+import {
+  GetCurrentReqCookies,
+  GetCurrentUserId,
+  Public,
+} from './common/decorators';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('local/signup')
   @HttpCode(HttpStatus.CREATED)
   async signupLocal(
@@ -34,9 +39,9 @@ export class AuthController {
         path: 'auth/refresh',
       })
       .send(tokens);
-    // return this.authService.signupLocal(dto);
   }
 
+  @Public()
   @Post('local/signin')
   @HttpCode(HttpStatus.OK)
   async signinLocal(
@@ -55,7 +60,7 @@ export class AuthController {
       .send(tokens);
   }
 
-  @UseGuards(AtGuard)
+  // @UseGuards(AtGuard)
   @Post('local/reset')
   @HttpCode(HttpStatus.OK)
   async resetPassLocal(
@@ -74,13 +79,14 @@ export class AuthController {
       .send(tokens);
   }
 
-  @UseGuards(AtGuard)
+  // @UseGuards(AtGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout(@GetCurrentUserId() userId: number) {
     return this.authService.logout(userId);
   }
 
+  @Public()
   @UseGuards(RtGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
@@ -89,9 +95,11 @@ export class AuthController {
     @GetCurrentReqCookies() cookies,
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log(userId);
+    console.log(cookies);
     const tokens = await this.authService.refreshToken(
       userId,
-      cookies.refreshToken,
+      cookies.refreshToken as string,
     );
     res
       .cookie('accessToken', tokens.access_token, {
