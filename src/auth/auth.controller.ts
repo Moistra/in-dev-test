@@ -2,8 +2,10 @@ import { RtGuard } from './common/guards/rt.guard';
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Res,
   UseGuards,
@@ -16,11 +18,21 @@ import {
   GetCurrentUserId,
   Public,
 } from './common/decorators';
+import {
+  ApiCookieAuth,
+  ApiTags,
+  ApiForbiddenResponse,
+  ApiBadRequestResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
+@ApiCookieAuth()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiBadRequestResponse({ description: 'Already existed' })
+  @ApiTags('public routes')
   @Public()
   @Post('local/signup')
   @HttpCode(HttpStatus.CREATED)
@@ -40,6 +52,9 @@ export class AuthController {
       .send(tokens);
   }
 
+  @ApiUnauthorizedResponse({ description: 'rotten/corrupt access token' })
+  @ApiForbiddenResponse({ description: 'wrong user data' })
+  @ApiTags('public routes')
   @Public()
   @Post('local/signin')
   @HttpCode(HttpStatus.OK)
@@ -59,8 +74,9 @@ export class AuthController {
       .send(tokens);
   }
 
-  // @UseGuards(AtGuard)
-  @Post('local/reset')
+  @ApiUnauthorizedResponse({ description: 'rotten/corrupt access token' })
+  @ApiTags('via access token')
+  @Patch('local/reset')
   @HttpCode(HttpStatus.OK)
   async resetPassLocal(
     @Body() dto: AuthDto,
@@ -78,16 +94,19 @@ export class AuthController {
       .send(tokens);
   }
 
-  // @UseGuards(AtGuard)
+  @ApiTags('via access token')
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout(@GetCurrentUserId() userId: number) {
     return this.authService.logout(userId);
   }
 
+  @ApiForbiddenResponse({ description: 'user was logout before' })
+  @ApiUnauthorizedResponse({ description: 'rotten/corrupt refresh token' })
+  @ApiTags('via refresh token')
   @Public()
   @UseGuards(RtGuard)
-  @Post('refresh')
+  @Get('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshTokens(
     @GetCurrentUserId() userId: number,

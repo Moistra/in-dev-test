@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -22,6 +23,13 @@ export class AuthService {
 
   async signupLocal(dto: AuthDto): Promise<Tokens> {
     const hash = await this.hashData(dto.password);
+    const isRegistered = await this.userRepository.findOneBy({
+      email: dto.email,
+    });
+    if (isRegistered) {
+      throw new BadRequestException('Already existed');
+    }
+
     const newUser = this.userRepository.create({
       email: dto.email,
       hash: hash,
@@ -37,11 +45,11 @@ export class AuthService {
       email: dto.email,
     });
     if (!user) {
-      throw new ForbiddenException('Access denied');
+      throw new UnauthorizedException('Access denied');
     }
     const isVerifiedPassword = await bcrypt.compare(dto.password, user.hash);
     if (!isVerifiedPassword) {
-      throw new UnauthorizedException('Access denied');
+      throw new ForbiddenException('Access denied');
     }
     const tokens = await this.generateTokens(user.id, user.email);
     await this.updateRtHash(user.id, tokens.refresh_token);
@@ -117,7 +125,7 @@ export class AuthService {
         },
         {
           secret: process.env.AT_SECRET,
-          expiresIn: '7h',
+          expiresIn: process.env.AT_EXPIRES || 15,
         },
       ),
       this.jwtService.signAsync(
