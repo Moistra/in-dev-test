@@ -10,7 +10,7 @@
 
   - authentication based on access and refresh tokens via httponly cookies
   - setup routes guard by default via access token
-  - swagger documentation on **"/api"** route
+  - swagger documentation on **"/api"** route **Since swagger does not show response cookies, but uses them, it is possible not to create an environment variable for the access token and their duration will be 15 sec by default. I chose to just use Insomnia**
 ---
 ## App flow 
 
